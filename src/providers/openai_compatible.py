@@ -625,6 +625,9 @@ class OpenAICompatibleProvider(BaseProvider):
     The client is created lazily on first use.
     """
 
+    # OpenAI-compatible providers use prompt_tokens_details.cached_tokens
+    uses_openai_style_cache_breakdown: bool = True
+
     def __init__(
         self,
         api_key: str,

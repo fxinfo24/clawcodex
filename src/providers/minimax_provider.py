@@ -32,6 +32,8 @@ class MinimaxProvider(BaseProvider):
     """
 
     provider_id = "minimax"
+    # Minimax uses Anthropic-compatible API with native cache fields
+    uses_openai_style_cache_breakdown: bool = False
 
     DEFAULT_BASE_URL = "https://api.minimax.io/anthropic"
 
@@ -84,6 +86,29 @@ class MinimaxProvider(BaseProvider):
         prepared = super()._prepare_messages(messages)
         from .openai_responses import strip_responses_item_blocks
         return strip_responses_item_blocks(prepared)
+
+    def _build_usage_dict(self, usage: Any) -> dict[str, Any]:
+        """Build usage dict from Anthropic SDK usage object.
+
+        Minimax uses Anthropic-compatible API with native cache fields.
+        """
+        if usage is None:
+            return {
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "cache_creation_input_tokens": 0,
+                "cache_read_input_tokens": 0,
+            }
+        return {
+            "input_tokens": _usage_token_count(usage, "input_tokens"),
+            "output_tokens": _usage_token_count(usage, "output_tokens"),
+            "cache_creation_input_tokens": _usage_token_count(
+                usage, "cache_creation_input_tokens"
+            ),
+            "cache_read_input_tokens": _usage_token_count(
+                usage, "cache_read_input_tokens"
+            ),
+        }
 
     def _build_chat_response(
         self,

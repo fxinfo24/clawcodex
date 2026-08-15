@@ -186,6 +186,9 @@ class GeminiProvider(BaseProvider):
     """Native Gemini provider via the google-genai SDK."""
 
     provider_id = "gemini"
+    # Gemini uses google-genai SDK with its own usage metadata format
+    # (prompt_token_count, candidates_token_count), not OpenAI-style cached_tokens
+    uses_openai_style_cache_breakdown: bool = False
 
     DEFAULT_MODEL = "gemini-2.5-pro"
 

@@ -278,6 +278,9 @@ class AnthropicProvider(BaseProvider):
     """Anthropic Claude provider."""
 
     provider_id = "anthropic"
+    # Anthropic has native cache fields (cache_read_input_tokens, cache_creation_input_tokens)
+    # NOT OpenAI-style prompt_tokens_details.cached_tokens
+    uses_openai_style_cache_breakdown: bool = False
 
     def __init__(
         self, api_key: str, base_url: Optional[str] = None, model: Optional[str] = None

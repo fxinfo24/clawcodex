@@ -23,6 +23,10 @@ class DeepSeekProvider(OpenAICompatibleProvider):
     """DeepSeek provider using the OpenAI SDK against the DeepSeek base URL."""
 
     provider_id = "deepseek"
+    # DeepSeek native API uses prompt_cache_hit_tokens / prompt_cache_miss_tokens
+    # NOT OpenAI-style prompt_tokens_details.cached_tokens
+    # (Gateways serving DeepSeek may use OpenAI format — handled in _build_usage_dict)
+    uses_openai_style_cache_breakdown: bool = False
 
     DEFAULT_BASE_URL = "https://api.deepseek.com"
 
