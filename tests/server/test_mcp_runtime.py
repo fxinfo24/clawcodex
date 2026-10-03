@@ -22,7 +22,7 @@ def _configure(monkeypatch, tmp_path: Path) -> None:
     }
     import src.services.mcp.config as mcpconfig
 
-    monkeypatch.setattr(mcpconfig, "get_all_mcp_configs", lambda: cfg)
+    monkeypatch.setattr(mcpconfig, "get_all_mcp_configs", lambda: (cfg, []))
 
 
 def test_runtime_connects_lists_and_calls(monkeypatch, tmp_path: Path) -> None:
@@ -79,7 +79,7 @@ def test_mcp_tools_register_into_default_registry(monkeypatch, tmp_path: Path) -
 def test_runtime_no_servers_is_noop(monkeypatch) -> None:
     import src.services.mcp.config as mcpconfig
 
-    monkeypatch.setattr(mcpconfig, "get_all_mcp_configs", lambda: {})
+    monkeypatch.setattr(mcpconfig, "get_all_mcp_configs", lambda: ({}, []))
     rt = McpRuntime()
     assert rt.start() is False
     assert rt.tools == []

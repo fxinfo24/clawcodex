@@ -96,7 +96,15 @@ class McpRuntime:
             logger.debug("[mcp] config module unavailable", exc_info=True)
             return False
         try:
-            configs = get_all_mcp_configs()
+            # get_all_mcp_configs() returns (servers, validation_errors). This
+            # call site treated the tuple itself as the server map and called
+            # .items() on it, so AttributeError was raised on every session
+            # start. The guard above swallowed it, start() returned False, and
+            # context.mcp_clients stayed empty -- which is why every configured
+            # MCP server reported "not connected" no matter how correct
+            # config.json was. Every other call site unpacks the tuple; this
+            # one did not.
+            configs, _errors = get_all_mcp_configs()
         except Exception:  # noqa: BLE001
             logger.debug("[mcp] reading configs failed", exc_info=True)
             return False
