@@ -41,6 +41,18 @@ DEFAULT_READ_TIMEOUT_S: float = 300.0
 DEFAULT_WRITE_TIMEOUT_S: float = 30.0
 DEFAULT_POOL_TIMEOUT_S: float = 10.0
 
+# httpx's default User-Agent is ``python-httpx/x.y``, which Cloudflare rejects
+# with Error 1010 (``browser_signature_banned``) on any site running browser
+# integrity checks. That silently broke every Streamable-HTTP / SSE MCP server
+# behind such a WAF — the handshake 403s, so no tools are ever listed and the
+# server is absent from server-sessions.json, with no error surfaced to the
+# user. Send a browser UA by default; caller-supplied headers still win.
+# Same reasoning as ``tool_system/tools/web_fetch.py``'s ``_BROWSER_UA``.
+_BROWSER_UA = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+)
+
 
 def _env_float(name: str, default: float) -> float:
     """Read a positive-float env-var override; fall back to ``default``.
@@ -87,8 +99,12 @@ def build_mcp_http_client(
     exit stack). Headers when provided are baked into the client so all
     requests carry them — matches the SDK's expectation for header
     propagation on Streamable HTTP and SSE.
+
+    A browser ``User-Agent`` is always set (see ``_BROWSER_UA``) because
+    httpx's default trips Cloudflare bot protection. A caller-supplied
+    ``User-Agent`` overrides the default.
     """
     return httpx.AsyncClient(
         timeout=build_mcp_timeout(),
-        headers=headers,
+        headers={"User-Agent": _BROWSER_UA, **(headers or {})},
     )
